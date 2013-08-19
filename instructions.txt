@@ -1,0 +1,24 @@
+Instructions:
+The goal of this assignment is to develop a very simple prototype of a microblogging service in which users can write up to 140 character messages.  Users can subscribe to other users and see a list of recent messages from those they're subscribed to (this is probably starting to sound familiar.)  This being just a simple prototype, authentication is done via basic http auth, and the front-end should be a single html page where content is loaded dynamically via asynchronous javascript.  We've setup a very basic framework with a simple back-end API written in PHP, the javascript to easily interact with that API, a MySQL database with a users table already set up, and login logic to show how all the pieces fit together.
+
+The finished assignment should have the following functionality:
+
+1. List the users in the system.
+2. Allow subscribing to and unsubscribing from the users in that list.
+3. Show the last 20 messages from the users you're subscribed to.
+4. Write messages of your own.
+5. Re-post someone else's message such that it gives the original author attribution in your message (essentially a retweet)
+6. Support changing your password.
+
+We're looking for code quality, database design, and functionality.  We're not concerned with visual design, so don't worry about making it look pretty.  Also, feel free to use any open source libraries (JQuery is included), but try to stick with the spirit of the simple framework we've provided.
+
+When finished, return a zip similar to this one including a dump of your database and all the code for your project.
+
+
+
+Setup:
+In this zip file is an index file with a basic layout, including a sort of debug window that shows API calls and their responses.  On a web server with PHP and MySQL, all that should be required to get things up and running is importing the .sql file, creating a MySQL user for the assignment, updating the credentials in /api/database.php with those database credentials, and loading up the index page.
+The username and password for the example user that already exists in the database is test/test
+
+
+
