@@ -1,14 +1,14 @@
 language: php
 
+notifications:
+  email: false
+
 php:
   - 5.3
   - 5.4
   - 5.5
 
 before_script:
-  ## Composer
-  - composer install --prefer-source
-  - composer selfupdate --quiet
   ## PHP_CodeSniffer
   - pyrus install pear/PHP_CodeSniffer
   - phpenv rehash
