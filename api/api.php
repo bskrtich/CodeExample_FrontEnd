@@ -5,10 +5,17 @@ include('database.php');
 $userInfo = false; // Global representing the logged in user
 
 // Returns a consistent error format and exits
-function apiError($errorName, $errorMessage) {
+function apiError($errorName, $errorMessage)
+{
     global $method;
 
-    $apiOutput = Array('error' => Array('method' => $method, 'name' => $errorName, 'message' => $errorMessage));
+    $apiOutput = array(
+        'error' => array(
+            'method' => $method,
+            'name' => $errorName,
+            'message' => $errorMessage
+            )
+        );
 
     header('Content-Type: application/json');
     echo json_encode($apiOutput);
@@ -17,10 +24,11 @@ function apiError($errorName, $errorMessage) {
 
 
 // Returns a successful API response and it's data, then exits
-function apiResult($result = null) {
+function apiResult($result = null)
+{
     if ($result === null) $result = new stdClass();
 
-    $apiOutput = Array('result' => $result);
+    $apiOutput = array('result' => $result);
 
     header('Content-Type: application/json');
     echo json_encode($apiOutput);
@@ -29,35 +37,48 @@ function apiResult($result = null) {
 
 
 // Validates the type of required and optional parameters
-function checkParameterType($type, $parameter, $optional = false) {
+function checkParameterType($type, $parameter, $optional = false)
+{
     global $request;
 
     $optionalOutput = ($optional ? 'if given, ' : '');
 
     if ($type == 'float') {
-        if (!is_float($request['params'][$parameter]) && !is_int($request['params'][$parameter])) {
-            apiError('InvalidParameter', 'InvalidParameter: ' . $optionalOutput . $parameter . ' must be float.');
+        if (!is_float($request['params'][$parameter]) &&
+            !is_int($request['params'][$parameter])) {
+            apiError(
+                'InvalidParameter',
+                'InvalidParameter: '.$optionalOutput.$parameter.' must be float.'
+            );
         } else {
             return (float) $request['params'][$parameter];
         }
-    }
-    else if ($type == 'int') {
+    } elseif ($type == 'int') {
         if (!is_int($request['params'][$parameter])) {
-            apiError('InvalidParameter', 'InvalidParameter: ' . $optionalOutput . $parameter . ' must be integer.');
+            apiError(
+                'InvalidParameter',
+                'InvalidParameter: '.$optionalOutput.$parameter.' must be integer.'
+            );
         } else {
             return (int) $request['params'][$parameter];
         }
-    } else if ($type == 'bool') {
+    } elseif ($type == 'bool') {
         if ($request['params'][$parameter] === true) {
             return true;
-        } else if ($request['params'][$parameter] === false) {
+        } elseif ($request['params'][$parameter] === false) {
             return false;
         } else {
-            apiError('InvalidParameter', 'InvalidParameter: ' . $optionalOutput . $parameter . ' must be boolean.');
+            apiError(
+                'InvalidParameter',
+                'InvalidParameter: '.$optionalOutput.$parameter.' must be boolean.'
+            );
         }
-    } else if ($type == 'string') {
+    } elseif ($type == 'string') {
         if (!is_string($request['params'][$parameter])) {
-            apiError('InvalidParameter', 'InvalidParameter: ' . $optionalOutput . $parameter . ' must be a string.');
+            apiError(
+                'InvalidParameter',
+                'InvalidParameter: '.$optionalOutput.$parameter.' must be a string.'
+            );
         } else {
             return (string) $request['params'][$parameter];
         }
@@ -67,30 +88,44 @@ function checkParameterType($type, $parameter, $optional = false) {
 }
 
 
-// Ensures that the request was sent with the provided parameter, and that is of the appropriate type
-function requiredParameter($parameter, $type, $options = null) {
+// Ensures that the request was sent with the provided parameter,
+// and that is of the appropriate type
+function requiredParameter($parameter, $type, $options = null)
+{
     global $request;
 
     if (!isset($request['params']))
-        apiError('NoParam', 'No params supplied for method with required parameters.');
+        apiError(
+            'NoParam',
+            'No params supplied for method with required parameters.'
+        );
 
     if (!isset($request['params'][$parameter]))
         apiError('MissingParameter', 'Missing parameter: ' . $parameter);
 
     if ($options !== null && !in_array($request['params'][$parameter], $options))
-        apiError('InvalidParameter', 'InvalidParameter: ' . $parameter . ' must be one of: ' . implode(', ', $options));
+        apiError(
+            'InvalidParameter',
+            'InvalidParameter: '.$parameter.' must be one of: '.implode(', ', $options)
+        );
 
     return checkParameterType($type, $parameter);
 }
 
 
 // Determines if an optional parameter was sent, and defaults to the default if not
-function optionalParameter($parameter, $type, $default, $options = null) {
+function optionalParameter($parameter, $type, $default, $options = null)
+{
     global $request;
 
-    if (isset($request['params'][$parameter]) && (!empty($request['params'][$parameter]) || $request['params'][$parameter] === false)) {
+    if (isset($request['params'][$parameter]) &&
+        (!empty($request['params'][$parameter]) ||
+        $request['params'][$parameter] === false)) {
         if ($options !== null && !in_array($request['params'][$parameter], $options))
-            apiError('InvalidParameter', 'InvalidParameter: if given, ' . $parameter . ' must be one of: ' . implode(', ', $options));
+            apiError(
+                'InvalidParameter',
+                'InvalidParameter: if given, '.$parameter.' must be one of: '.implode(', ', $options)
+            );
 
         return checkParameterType($type, $parameter, true);
     } else {
@@ -99,7 +134,8 @@ function optionalParameter($parameter, $type, $default, $options = null) {
 }
 
 
-function requiresBasicAuth() {
+function requiresBasicAuth()
+{
     header('WWW-Authenticate: Basic realm="Assignment"');
     header('HTTP/1.1 401 Unauthorized');
 
@@ -109,7 +145,8 @@ function requiresBasicAuth() {
 
 
 // Ensures that valid basic http auth credentials have been sent
-function validateUser() {
+function validateUser()
+{
     global $sqlCon;
 
     if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
@@ -132,8 +169,9 @@ function validateUser() {
 
         $userInfo = $prepared->fetch(PDO::FETCH_OBJ);
 
-        if (!$userInfo)
-        return requiresBasicAuth();
+        if (!$userInfo) {
+            return requiresBasicAuth();
+        }
         $userInfo->id = (int) $userInfo->id;
 
         $hashed = hash('sha512', $userInfo->salt . $_SERVER['PHP_AUTH_PW']);

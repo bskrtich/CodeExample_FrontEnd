@@ -9,14 +9,16 @@ php:
   - 5.5
 
 before_script:
-  ## PHP_CodeSniffer
-  - pyrus install pear/PHP_CodeSniffer
+  - pear install PHP_CodeSniffer
   - phpenv rehash
+  - ./composer.phar install --dev --prefer-source --no-interaction
 
 script:
   ## PHP_CodeSniffer
   - phpcs --standard=PSR2 index.php
   - phpcs --standard=PSR2 api
   - phpcs --standard=PSR2 assets
+  ## PHPmd
+  - ./vendor/bin/phpmd src/ text codesize,unusedcode,naming,phpmd.xml
   ## PHPUnit
-  #- phpunit -c ./ --coverage-text
+  - ./vendor/bin/phpunit
