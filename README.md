@@ -1,5 +1,4 @@
 CodeExample_FrontEnd
 ====================
 
-
-A incomplete code example
+Example Microblogging Service
