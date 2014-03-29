@@ -1,5 +1,5 @@
 <?php
-	include('api/api.php');
+	include('../api/api.php');
 	$validUser = validateUser();
 
 	if(!$validUser) exit();

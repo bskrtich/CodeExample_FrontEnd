@@ -1,6 +1,6 @@
 {
-  "require-dev": {
-    "phpunit/phpunit": "3.7.*",
-    "phpmd/phpmd": "*"
-  }
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*",
+        "phpmd/phpmd": "*"
+    }
 }

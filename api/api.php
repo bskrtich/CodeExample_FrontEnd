@@ -1,6 +1,6 @@
 <?php
 
-include('database.php');
+require 'database.php';
 
 $userInfo = false; // Global representing the logged in user
 
