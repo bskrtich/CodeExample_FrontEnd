@@ -16,10 +16,8 @@ before_script:
 
 script:
   ## PHP_CodeSniffer
-  - phpcs --standard=PSR2 index.php
-  - phpcs --standard=PSR2 api
-  - phpcs --standard=PSR2 assets
+  - phpcs --report=summary --standard=PSR2 --ignore=lib documentroot api
   ## PHPmd
-  - ./vendor/bin/phpmd src/ text codesize,unusedcode,naming,phpmd.xml
+  - ./vendor/bin/phpmd documentroot,api text codesize,unusedcode,naming --exclude=lib
   ## PHPUnit
-  - ./vendor/bin/phpunit
+  #- ./vendor/bin/phpunit
