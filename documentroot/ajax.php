@@ -1,27 +1,33 @@
 <?php
+require '../api/msgservice.class.php';
+//require '../api/user.class.php';
+require '../api/msgapi.class.php';
 
-    require '../api/api.php';
-    $userInfo = validateUser();
+$msgservice = new msgservice($db);
+$user = $msgservice->validateUser();
 
-    $raw = file_get_contents('php://input');
-    $request = json_decode($raw, true);
+if (isset($_REQUEST['action'])) {
+    if (issset($_REQUEST['data']) &&
+        ($data = json_decode($_REQUEST['data'], true))) {
 
-    //print_r($request);
-
-    // Support both POST and GET data
-    if (isset($request['method'])) {
-        $method = $request['method'];
-    } elseif ($_GET['method']) {
-        $method = $_GET['method'];
+        $result = $msgservice->action(
+            $_SERVER['REQUEST_METHOD'],
+            $_REQUEST['action'],
+            $data
+        );
     } else {
-        header(
-            $_SERVER['SERVER_PROTOCOL'].' 500 Internal Server Error '.
-            '(MissingMethod: No method specified.)',
-            true,
-            500
+        $result = $msgservice->action(
+            $_SERVER['REQUEST_METHOD'],
+            $_REQUEST['action']
         );
     }
 
-    //echo "\nMethod: ".$method;
+    if (isset($result)) {
+        msgapi::apiResult($result);
+    } else {
+        msgapi::httpError(500, 'RequestError: Unknown Request Error.');
+    }
 
-    include '../api/methods.php';
+} else {
+    msgapi::httpError(500, 'MissingAction: No Action specified.');
+}

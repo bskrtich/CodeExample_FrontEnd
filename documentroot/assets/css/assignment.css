@@ -1,66 +1,65 @@
+@import url(http://fonts.googleapis.com/css?family=Share+Tech+Mono);
 
-	body{
-		margin: 0px;
-		padding: 0px;
-		background: #E4E8EA;
-		font-family: helvetica;
-	}
-	
-	
-	#header{
-		position: relative;
-		background: #FFFFFF;
-		height: 120px;
-		width: 100%;
-		border-bottom: 1px solid #666666;
-	}
-	
-	
-	#headerInner{
-		width: 960px;
-		margin: 0px auto 0px auto;
-	}
-	
-	#content {
-		width: 700px ;
+body {
+	margin: 0px;
+	padding: 75px 0px 0px 0px;
+	background: #E4E8EA;
+	font-family: helvetica;
+}
+
+.navbar-brand {
+	font-family: 'Share Tech Mono', monospace;
+	font-weight: bold;
+	font-size: x-large;
+}
+
+#header {
+	position: relative;
+	background: #FFFFFF;
+	height: 120px;
+	width: 100%;
+	border-bottom: 1px solid #666666;
+}
+
+#headerInner {
+	width: 960px;
+	margin: 0px auto 0px auto;
+}
+
+#loggedInAs {
+	float: right;
+	margin: 16px;
+}
+
+#content {
+		width: 650px ;
 		text-align: center ;
 		margin-left: auto ;
 		margin-right: auto ;
-	}
-	
-	
-	#loggedInAs{
-		float: right;
-		margin: 16px;
-	}
-	
-	
-	#debugWrapper{
-		max-width: 960px;
-		font-size: 0.8em;
-		margin: auto auto 0px auto;
-	}
-	
-	
-	#debugExplanation{
-		font-weight: bold;
-		margin: 8px 8px 4px 8px;
-	}
 
-	
-	#debug{
-		background: #FFFFFF;
-		border: 1px solid #666666;
-	}
 
-	
-	#debug div{
-		margin: 8px;
-		white-space: pre-wrap;
-	}
-	
+#debugWrapper {
+	max-width: 960px;
+	font-size: 0.8em;
+	margin: 200px auto 0px auto;
+}
 
-	.debugError{
-		color: #AA0000;
-		font-weight: bold;
-	}
+#debugExplanation {
+	font-weight: bold;
+	margin: 8px 8px 4px 8px;
+}
+
+#debug {
+	background: #FFFFFF;
+	border: 1px solid #666666;
+}
+
+#debug div {
+	margin: 8px;
+	white-space: pre-wrap;
+}
+
+.debugError {
+	color: #AA0000;
+	font-weight: bold;
+}
