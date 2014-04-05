@@ -1,11 +1,12 @@
+"use strict";
 
 var apiEndPoint = 'ajax.php';
 
-
 // method is called with params as input, with the result being fed to the apiCallback function on success, errors are written to the debug output
 function callAPI(method, apiCallback, params){
-	if(typeof params == 'undefined' || !params)
-	params = new Object();
+	if (typeof params == 'undefined' || !params) {
+		params = new Object();
+	}
 
 	var request = new Object();
 
@@ -20,7 +21,7 @@ function callAPI(method, apiCallback, params){
 		'type' : 'POST',
 		'url' : apiEndPoint,
 		'data' : jsonRequest,
-		'complete' : function(jqXHR, textStatus){
+		'complete' : function(jqXHR, textStatus) {
 			parseAPIResult(jqXHR, textStatus, method, apiCallback);
 		},
 		'dataType' : 'json'

@@ -46,12 +46,20 @@ class msgservice
                 break;
 
             case 'usergetinfo':
-                $user_id = msgapi::optionalParameter($data, 'userid', 'int', $this->user->user_id);
+                $user_id = msgapi::optionalParameter(
+                    $data,
+                    'userid',
+                    'int',
+                    $this->user->user_id
+                );
 
                 $user = self::getUserByID($user_id);
 
                 if (!$user) {
-                    apiError('NoUser', 'User does not exist with userID: '.$this->user->user_id);
+                    apiError(
+                        'NoUser',
+                        'User does not exist with userID: '.$this->user->user_id
+                    );
                 }
 
                 $result = new stdClass();
@@ -61,11 +69,20 @@ class msgservice
                 break;
 
             case 'useradd':
-                $username = msgapi::requiredParameter($data, 'username', 'string');
-                $password = msgapi::optionalParameter($data, 'password', 'string', substr(sha1(microtime()), 0, 8));
+                $username = msgapi::requiredParameter(
+                    $data,
+                    'username',
+                    'string'
+                );
+                $password = msgapi::optionalParameter(
+                    $data,
+                    'password',
+                    'string',
+                    substr(sha1(microtime()), 0, 8)
+                );
 
-                $salt = hash('sha512', str_shuffle($username . microtime() . rand(0, 9999999) . $password));
-                $hashed = hash('sha512', $salt . $password);
+                $salt = self::genSalt($username, $password);
+                $hashed = self::genHash($salt, $password);
 
                 $sql = 'INSERT IGNORE INTO
                             users (
@@ -89,9 +106,39 @@ class msgservice
                 } else {
                     msgapi::pdoError($this->db);
                 }
+
                 break;
 
             case 'userchangepass':
+                $password = msgapi::requiredParameter(
+                    $data,
+                    'password',
+                    'string',
+                    substr(sha1(microtime()), 0, 8)
+                );
+
+                $salt = self::genSalt($username, $password);
+                $hashed = self::genHash($salt, $password);
+
+                $sql = "UPDATE
+                            users
+                        SET
+                            salt = :salt,
+                            password = :password
+                        WHERE
+                            user_id = :user_id";
+
+                $request = $this->db->prepare($sql);
+                $request->bindValue(':salt', $salt);
+                $request->bindValue(':password', $hashed);
+                $request->bindValue(':user_id', $this->user->user_id);
+
+                if ($request->execute()) {
+                    return true;
+                } else {
+                    msgapi::pdoError($this->db);
+                }
+
                 break;
 
             case 'userlist':
@@ -113,9 +160,52 @@ class msgservice
                 break;
 
             case 'subadd':
+                $userid = msgapi::requiredParameter($data, 'userid', 'int');
+                $subuserid = msgapi::requiredParameter($data, 'subuserid', 'int');
+
+                $sql = "INSERT IGNORE INTO
+                            subscriptions (
+                                user_id,
+                                sub_to_user_id
+                            )
+                            VALUES (
+                                :user_id,
+                                :sub_to_user_id
+                            )";
+
+                $request = $this->db->prepare($sql);
+                $request->bindValue(':user_id', $userid, PDO::PARAM_INT);
+                $request->bindValue(':sub_to_user_id', $subuserid, PDO::PARAM_INT);
+
+                if ($request->execute()) {
+                    return true;
+                } else {
+                    msgapi::pdoError($this->db);
+                }
+
                 break;
 
             case 'subremove':
+                $userid = msgapi::requiredParameter($data, 'userid', 'int');
+                $subuserid = msgapi::requiredParameter($data, 'subuserid', 'int');
+
+                $sql = "DELETE FROM
+                            subscriptions
+                        WHERE
+                            user_id = :user_id
+                        AND
+                            sub_to_user_id = :sub_to_user_id";
+
+                $request = $this->db->prepare($sql);
+                $request->bindValue(':user_id', $userid, PDO::PARAM_INT);
+                $request->bindValue(':sub_to_user_id', $subuserid, PDO::PARAM_INT);
+
+                if ($request->execute()) {
+                    return true;
+                } else {
+                    msgapi::pdoError($this->db);
+                }
+
                 break;
 
             case 'submsglist':
@@ -136,7 +226,11 @@ class msgservice
                             sub.user_id = :user_id';
 
                 $request = $this->db->prepare($sql);
-                $request->bindValue(':user_id', $this->user->user_id, PDO::PARAM_INT);
+                $request->bindValue(
+                    ':user_id',
+                    $this->user->user_id,
+                    PDO::PARAM_INT
+                );
 
                 if ($request->execute()) {
                     $result = $request->fetchAll(PDO::FETCH_CLASS);
@@ -151,6 +245,20 @@ class msgservice
                 return null;
         }
         return null;
+    }
+
+    private function genSalt($username, $password) {
+        $salt = hash(
+            'sha512',
+            str_shuffle($username . microtime() . rand(0, 9999999) . $password)
+        );
+        return $salt;
+    }
+
+    private function genHash($salt, $password) {
+        $hashed = hash('sha512', $salt . $password);
+
+        return $hashed;
     }
 
     public function requiresBasicAuth() {

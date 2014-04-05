@@ -1,7 +1,8 @@
+"use strict";
+
 function parseUserInfo(result){
 	$('#loggedInAs').html('Logged in as: ' + result['user']['username']);
 }
-
 
 $(document).ready(function(){
 	callAPI('GetUserInfo', parseUserInfo, {});

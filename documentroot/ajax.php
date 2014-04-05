@@ -1,6 +1,5 @@
 <?php
 require '../api/msgservice.class.php';
-//require '../api/user.class.php';
 require '../api/msgapi.class.php';
 
 $msgservice = new msgservice($db);

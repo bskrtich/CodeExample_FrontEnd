@@ -38,7 +38,7 @@ if (!$user) {
                 <li><a data-toggle="tab" href="#users">Users</a></li>
                 <li><a data-toggle="tab" href="#account">Account</a></li>
             </ul>
-            <p id="loggedInAs" class="navbar-text pull-right">Signed in as <?php echo $user->user_name; ?></p>
+            <p id="loggedInAs" class="navbar-text pull-right">Signed in as [user]</p>
         </div>
         <div id="content" class="container">
             <div class="tab-content">
