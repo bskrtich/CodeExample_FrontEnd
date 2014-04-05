@@ -1,7 +1,5 @@
 <?php
-
-require '../api/msgservice.class.php';
-require '../api/user.class.php';
+require_once '../api/msgservice.class.php';
 
 $msgservice = new msgservice($db);
 $user = $msgservice->validateUser();
@@ -37,7 +35,6 @@ if (!$user) {
             <ul id="main-navbar" class="nav navbar-nav">
                 <li class="active"><a data-toggle="tab" href="#latestmsgs">Latest Msgs</a></li>
                 <li><a data-toggle="tab" href="#newmsg">New Msg</a></li>
-                <li><a data-toggle="tab" href="#followers">Followers</a></li>
                 <li><a data-toggle="tab" href="#users">Users</a></li>
                 <li><a data-toggle="tab" href="#account">Account</a></li>
             </ul>
@@ -60,23 +57,8 @@ if (!$user) {
                     </table>
 
                 </div>
-                <div class="tab-pane" id="newmsg">[New Msg]</div>
-                <div class="tab-pane" id="followers">
-
-                    <table id="followerlist" class="table table-striped table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>People I am Following</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>No Follows Found</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-
+                <div class="tab-pane" id="newmsg">
+                    [New Msg]
                 </div>
                 <div class="tab-pane" id="users">
                     <table id="userlist" class="table table-striped table-bordered table-hover">

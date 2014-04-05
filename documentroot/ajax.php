@@ -7,16 +7,14 @@ $msgservice = new msgservice($db);
 $user = $msgservice->validateUser();
 
 if (isset($_REQUEST['action'])) {
-    if (issset($_REQUEST['data']) &&
-        ($data = json_decode($_REQUEST['data'], true))) {
-
-        $result = $msgservice->action(
+    if (isset($_REQUEST['params'])) {
+        $result = $msgservice->ajaxAction(
             $_SERVER['REQUEST_METHOD'],
             $_REQUEST['action'],
-            $data
+            $_REQUEST['params']
         );
     } else {
-        $result = $msgservice->action(
+        $result = $msgservice->ajaxAction(
             $_SERVER['REQUEST_METHOD'],
             $_REQUEST['action']
         );

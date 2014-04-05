@@ -3,6 +3,18 @@ The goal of this assignment is to develop a very simple prototype of a microblog
 
 The finished assignment should have the following functionality:
 
+msgpost
+
+usergetinfo
+useradd
+userchangepass
+userlist
+
+subadd
+subremove
+submsglist
+
+
 1. List the users in the system.
 2. Allow subscribing to and unsubscribing from the users in that list.
 3. Show the last 20 messages from the users you're subscribed to.

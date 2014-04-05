@@ -4,89 +4,156 @@ require_once 'database.php';
 class msgservice
 {
     private $db;
+    private $user;
 
-    function __construct(&$db) {
+    public function __construct(&$db) {
         $this->db = $db;
     }
 
-    function action($method, $action, $data) {
-        switch ($method) {
-            case 'latestmsgs':
-                $sql = 'SELECT
-                            *
-                        FROM
-                            messages msg
-                        JOIN
-                            subscriptions sub
-                        ON
-                            msg.user_id = sub.following_user_id
-                        WHERE
-                            sub.user_id = 1';
+    public function ajaxAction($method, $action, $data = NULL) {
+        // Check for these actions that require a post
+        $actions_require_post = array(
+            'msgadd',
+            'useradd',
+            'userchangepass',
+            'subadd',
+            'subremove'
+        );
 
-                $result = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        if ($method !== 'POST' && in_array($action, $actions_require_post)) {
+            msgapi::apiError(
+                'BadMethodForRequest',
+                'This request must be sent as a POST'
+            );
+        }
 
-                return $result;
+        switch ($action) {
+            case 'msgadd':
+                $msg = msgapi::requiredParameter($data, 'msg', 'string');
+                $attrmsg = msgapi::optionalParameter($data, 'attrmsg', 'int', null);
+
+                $status = self::postMessage($msg, $attrmsg);
+
+                if ($status === true) {
+                    $result = new stdClass();
+                    $result->msg = $msg;
+                    $result->attrmsg = $attrmsg;
+                    return $result;
+                } else {
+                    return false;
+                }
+
                 break;
 
-            case 'newmsg' :
-                $result = new stdClass();
-                $result->newmsg = 'My New Message';
+            case 'usergetinfo':
+                $user_id = msgapi::optionalParameter($data, 'userid', 'int', $this->user->user_id);
 
-                apiResult($result);
-                break;
+                $user = self::getUserByID($user_id);
 
-            case 'GetUserInfo' :
-                $user = getUserByID($userInfo->userID);
-
-                if (!$user) apiError('NoUser', 'User does not exist with userID: ' . $userInfo->userID);
+                if (!$user) {
+                    apiError('NoUser', 'User does not exist with userID: '.$this->user->user_id);
+                }
 
                 $result = new stdClass();
                 $result->user = $user;
 
-                apiResult($result);
+                return $result;
                 break;
 
-            case 'AddUser' :
-                $username = requiredParameter('username', 'string');
-                $password = optionalParameter('password', 'string', substr(sha1(microtime()), 0, 8));
+            case 'useradd':
+                $username = msgapi::requiredParameter($data, 'username', 'string');
+                $password = msgapi::optionalParameter($data, 'password', 'string', substr(sha1(microtime()), 0, 8));
 
                 $salt = hash('sha512', str_shuffle($username . microtime() . rand(0, 9999999) . $password));
                 $hashed = hash('sha512', $salt . $password);
 
                 $sql = 'INSERT IGNORE INTO
                             users (
-                                username,
-                                password,
-                                salt
+                                user_name,
+                                salt,
+                                password
                             )
                             VALUES (
-                                :username,
-                                :password,
-                                :salt
+                                :user_name,
+                                :salt,
+                                :password
                             )';
 
-                $prepared = $sqlCon->prepare($sql);
-                $prepared->bindValue(':username', $username);
-                $prepared->bindValue(':password', $hashed);
-                $prepared->bindValue(':salt', $salt);
-                sqlQuery($prepared);
+                $request = $this->db->prepare($sql);
+                $request->bindValue(':user_name', $username);
+                $request->bindValue(':salt', $salt);
+                $request->bindValue(':password', $hashed);
 
-                apiResult();
+                if ($request->execute()) {
+                    return true;
+                } else {
+                    msgapi::pdoError($this->db);
+                }
                 break;
 
-            case 'users' :
-                $sql = "SELECT id, username FROM users ORDER BY username";
-                $result = $sqlCon->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-
-                apiResult($result);
+            case 'userchangepass':
                 break;
+
+            case 'userlist':
+                $sql = 'SELECT
+                            user_id,
+                            user_name
+                        FROM
+                            users
+                        ORDER BY
+                            user_name';
+
+                if ($request = $this->db->query($sql)) {
+                    $result = $request->fetchAll(PDO::FETCH_ASSOC);
+                    return $result;
+                } else {
+                    msgapi::pdoError($this->db);
+                }
+
+                break;
+
+            case 'subadd':
+                break;
+
+            case 'subremove':
+                break;
+
+            case 'submsglist':
+                $sql = 'SELECT
+                            msgs.msg_id,
+                            msgs.user_id,
+                            msgs.attribution_msg_id,
+                            msgs.msg,
+                            msgs.created,
+                            msgs.modified
+                        FROM
+                            msgs
+                        JOIN
+                            subscriptions sub
+                        ON
+                            msgs.user_id = sub.sub_to_user_id
+                        WHERE
+                            sub.user_id = :user_id';
+
+                $request = $this->db->prepare($sql);
+                $request->bindValue(':user_id', $this->user->user_id, PDO::PARAM_INT);
+
+                if ($request->execute()) {
+                    $result = $request->fetchAll(PDO::FETCH_CLASS);
+                    return $result;
+                } else {
+                    msgapi::pdoError($this->db);
+                }
+
+                break;
+
             default:
-                echo $request;
+                return null;
         }
+        return null;
     }
 
-
-    function requiresBasicAuth() {
+    public function requiresBasicAuth() {
         header('WWW-Authenticate: Basic realm="Assignment"');
         header('HTTP/1.1 401 Unauthorized');
 
@@ -94,11 +161,10 @@ class msgservice
         exit();
     }
 
-
     // Ensures that valid basic http auth credentials have been sent
-    function validateUser() {
+    public function validateUser() {
         if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
-            return requiresBasicAuth();
+            return self::requiresBasicAuth();
         } else {
             $sql = 'SELECT
                         user_id,
@@ -115,20 +181,70 @@ class msgservice
 
             sqlQuery($prepared);
 
-            $userInfo = $prepared->fetch(PDO::FETCH_OBJ);
+            $this->user = $prepared->fetch(PDO::FETCH_OBJ);
 
-            if (!$userInfo) {
-                return requiresBasicAuth();
+            if (!$this->user) {
+                return self::requiresBasicAuth();
             }
-            $userInfo->user_id = (int) $userInfo->user_id;
+            $this->user->user_id = (int) $this->user->user_id;
 
-            $hashed = hash('sha512', $userInfo->salt . $_SERVER['PHP_AUTH_PW']);
+            $hashed = hash('sha512', $this->user->salt . $_SERVER['PHP_AUTH_PW']);
 
-            if ($hashed != $userInfo->password) {
-                return requiresBasicAuth();
+            if ($hashed != $this->user->password) {
+                return self::requiresBasicAuth();
             }
         }
 
-        return $userInfo;
+        return $this->user;
+    }
+
+    public function postMessage($msg, $attribution_msg_id = null) {
+        $sql = 'INSERT INTO
+                    msgs (
+                        user_id,
+                        msg,
+                        attribution_msg_id
+                    )
+                    VALUES (
+                        :user_id,
+                        :msg,
+                        :attr_msg_id
+                    )';
+
+        $request = $this->db->prepare($sql);
+        $request->bindValue(':user_id', $this->user->user_id, PDO::PARAM_INT);
+        $request->bindValue(':msg', $msg, PDO::PARAM_STR);
+        $request->bindValue(':attr_msg_id', $attribution_msg_id, PDO::PARAM_INT);
+
+        if ($request->execute()) {
+            return true;
+        } else {
+            msgapi::pdoError($this->db);
+        }
+
+    }
+
+    public function getUserByID($user_id) {
+        $sql = 'SELECT
+                    user_id,
+                    user_name
+                FROM
+                    users
+                WHERE
+                    user_id = :user_id';
+
+        $request = $this->db->prepare($sql);
+        $request->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+
+        $user = null;
+        if ($request->execute()) {
+            $user = $request->fetchAll(PDO::FETCH_CLASS);
+        }
+
+        if ($user) {
+            return $user;
+        } else {
+            return msgapi::pdoError($this->db);
+        }
     }
 }

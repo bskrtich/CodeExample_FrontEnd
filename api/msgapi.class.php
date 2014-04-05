@@ -14,27 +14,80 @@ class msgapi
         exit();
     }
 
-    public static function apiError($method, $action, $errorName, $errorMessage) {
+    public static function apiError($errorName, $errorMessage) {
+        $action = '';
+
+        if (isset($_REQUEST['action'])) $action = $_REQUEST['action'];
+
         $apiOutput = array(
             'error' => array(
-                'method' => $method,
+                'method' => $_SERVER['REQUEST_METHOD'],
                 'action' => $action,
                 'name' => $errorName,
                 'message' => $errorMessage
                 )
             );
 
-        header('Content-Type: application/json');
-        echo json_encode($apiOutput);
-        exit();
+        self::apiResult($apiOutput);
+    }
+
+    public static function pdoError($db) {
+        $error = $db->errorInfo();
+        self::apiError(
+            'PDO Error ('.$error[0].') '.$error[1],
+            $error[2]
+        );
+    }
+
+    // Ensures that the request was sent with the provided parameter,
+    // and that is of the appropriate type
+    public static function requiredParameter($request, $parameter, $type, $options = null) {
+        if ($request === null) {
+            self::apiError(
+                'NoParam',
+                'No params supplied for action with required parameters.'
+            );
+        }
+
+        if (!isset($request[$parameter]))
+            self::apiError('MissingParameter', 'Missing parameter: ' . $parameter);
+
+        if ($options !== null && !in_array($request[$parameter], $options))
+            self::apiError(
+                'InvalidParameter',
+                'InvalidParameter: '.$parameter.' must be one of: '.implode(', ', $options)
+            );
+
+        return self::checkParameterType($request, $type, $parameter);
     }
 
 
-    // Returns a successful API response and it's data, then exits
-    public static function apiResult($result = true) {
-        if ($result === true) $result = new stdClass();
+    // Determines if an optional parameter was sent, and defaults to the default if not
+    public static function optionalParameter($request, $parameter, $type, $default, $options = null) {
+        if (isset($request[$parameter]) &&
+            (!empty($request[$parameter]) ||
+            $request[$parameter] === false)) {
+            if ($options !== null && !in_array($request[$parameter], $options))
+                self::apiError(
+                    'InvalidParameter',
+                    'InvalidParameter: if given, '.$parameter.' must be one of: '.implode(', ', $options)
+                );
 
-        $apiOutput = array('result' => $result);
+            return self::checkParameterType($request, $type, $parameter, true);
+        } else {
+            return $default;
+        }
+    }
+
+    // Returns a successful API response and it's data, then exits
+    public static function apiResult($result = null) {
+        if ($result === null) $result = new stdClass();
+
+        if (isset($result->error)) {
+            $apiOutput = $result;
+        } else {
+            $apiOutput = array('result' => $result);
+        }
 
         header('Content-Type: application/json');
         echo json_encode($apiOutput);
@@ -46,87 +99,56 @@ class msgapi
     public static function checkParameterType($request, $type, $parameter, $optional = false) {
         $optionalOutput = ($optional ? 'if given, ' : '');
 
+        if (is_string($request[$parameter]) &&
+            is_numeric($request[$parameter])) {
+            if(strpos($request[$parameter], '.') !== false) {
+                $request[$parameter] = (float) $request[$parameter];
+            } else {
+                $request[$parameter] = (int) $request[$parameter];
+            }
+        }
+
         if ($type == 'float') {
-            if (!is_float($request['params'][$parameter]) &&
-                !is_int($request['params'][$parameter])) {
-                apiError(
+            if (!is_float($request[$parameter]) &&
+                !is_int($request[$parameter])) {
+                self::apiError(
                     'InvalidParameter',
                     'InvalidParameter: '.$optionalOutput.$parameter.' must be float.'
                 );
             } else {
-                return (float) $request['params'][$parameter];
+                return (float) $request[$parameter];
             }
         } elseif ($type == 'int') {
-            if (!is_int($request['params'][$parameter])) {
-                apiError(
+            if (!is_int($request[$parameter])) {
+                self::apiError(
                     'InvalidParameter',
                     'InvalidParameter: '.$optionalOutput.$parameter.' must be integer.'
                 );
             } else {
-                return (int) $request['params'][$parameter];
+                return (int) $request[$parameter];
             }
         } elseif ($type == 'bool') {
-            if ($request['params'][$parameter] === true) {
+            if ($request[$parameter] === true) {
                 return true;
-            } elseif ($request['params'][$parameter] === false) {
+            } elseif ($request[$parameter] === false) {
                 return false;
             } else {
-                apiError(
+                self::apiError(
                     'InvalidParameter',
                     'InvalidParameter: '.$optionalOutput.$parameter.' must be boolean.'
                 );
             }
         } elseif ($type == 'string') {
-            if (!is_string($request['params'][$parameter])) {
-                apiError(
+            if (!is_string($request[$parameter])) {
+                self::apiError(
                     'InvalidParameter',
                     'InvalidParameter: '.$optionalOutput.$parameter.' must be a string.'
                 );
             } else {
-                return (string) $request['params'][$parameter];
+                return (string) $request[$parameter];
             }
         } else {
-            return $request['params'][$parameter];
-        }
-    }
-
-
-    // Ensures that the request was sent with the provided parameter,
-    // and that is of the appropriate type
-    public static function requiredParameter($request, $parameter, $type, $options = null) {
-        if (!isset($request['params']))
-            apiError(
-                'NoParam',
-                'No params supplied for method with required parameters.'
-            );
-
-        if (!isset($request['params'][$parameter]))
-            apiError('MissingParameter', 'Missing parameter: ' . $parameter);
-
-        if ($options !== null && !in_array($request['params'][$parameter], $options))
-            apiError(
-                'InvalidParameter',
-                'InvalidParameter: '.$parameter.' must be one of: '.implode(', ', $options)
-            );
-
-        return checkParameterType($type, $parameter);
-    }
-
-
-    // Determines if an optional parameter was sent, and defaults to the default if not
-    public static function optionalParameter($request, $parameter, $type, $default, $options = null) {
-        if (isset($request['params'][$parameter]) &&
-            (!empty($request['params'][$parameter]) ||
-            $request['params'][$parameter] === false)) {
-            if ($options !== null && !in_array($request['params'][$parameter], $options))
-                apiError(
-                    'InvalidParameter',
-                    'InvalidParameter: if given, '.$parameter.' must be one of: '.implode(', ', $options)
-                );
-
-            return checkParameterType($type, $parameter, true);
-        } else {
-            return $default;
+            return $request[$parameter];
         }
     }
 }
