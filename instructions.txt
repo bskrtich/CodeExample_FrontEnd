@@ -22,7 +22,7 @@ submsglist
 5. Re-post someone else's message such that it gives the original author attribution in your message (essentially a retweet)
 6. Support changing your password.
 
-We're looking for code quality, database design, and functionality.    Also, feel free to use any open source libraries (JQuery is included), but try to stick with the spirit of the simple framework we've provided.
+We're looking for code quality, database design, and functionality. Also, feel free to use any open source libraries (JQuery is included), but try to stick with the spirit of the simple framework we've provided.
 
 When finished, return a zip similar to this one including a dump of your database and all the code for your project.
 

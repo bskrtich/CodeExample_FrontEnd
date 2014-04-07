@@ -3,26 +3,22 @@
 var apiEndPoint = 'ajax.php';
 
 // method is called with params as input, with the result being fed to the apiCallback function on success, errors are written to the debug output
-function callAPI(method, apiCallback, params){
+function callAPI(action, apiCallback, params){
 	if (typeof params == 'undefined' || !params) {
 		params = new Object();
 	}
 
 	var request = new Object();
 
-	request['method'] = method;
+	request['action'] = action;
 	request['params'] = params;
 
-	var jsonRequest = JSON.stringify(request, null, 4);
-
-	writeDebug(jsonRequest);
-
 	$.ajax({
-		'type' : 'POST',
+		'type' : 'GET',
 		'url' : apiEndPoint,
-		'data' : jsonRequest,
+		'data' : request,
 		'complete' : function(jqXHR, textStatus) {
-			parseAPIResult(jqXHR, textStatus, method, apiCallback);
+			parseAPIResult(jqXHR, textStatus, action, apiCallback);
 		},
 		'dataType' : 'json'
 	});
@@ -30,22 +26,20 @@ function callAPI(method, apiCallback, params){
 
 
 // Ensures valid JSON was returned and feeds the result to the apiCallback function
-function parseAPIResult(jqXHR, textStatus, method, apiCallback){
-	try{
+function parseAPIResult(jqXHR, textStatus, action, apiCallback){
+	try {
 		var resultObject = JSON.parse(jqXHR['responseText']);
 		writeDebug(JSON.stringify(resultObject, null, 4).replace(/\\n/g, "\n"));
-	}
-	catch(err){
+	} catch(err) {
 		if(jqXHR['responseText'] != '')
 		writeDebug('Invalid response from server.' + jqXHR['responseText'], 'debugError');
 		return;
 	}
 
-	if('error' in resultObject && typeof resultObject['error']['message'] != 'undefined' && typeof resultObject['error']['name'] != 'undefined'){
+	if ('error' in resultObject && typeof resultObject['error']['message'] != 'undefined' && typeof resultObject['error']['name'] != 'undefined') {
 		writeDebug('API Error: ' + resultObject['error']['message'], 'debugError');
 		return;
-	}
-	else if(!('result' in resultObject) || jqXHR['status'] != 200){
+	} else if(!('result' in resultObject) || jqXHR['status'] != 200) {
 		writeDebug('Invalid response from server.' + jqXHR['responseText'], 'debugError');
 		return;
 	}

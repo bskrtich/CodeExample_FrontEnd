@@ -42,50 +42,52 @@ if (!$user) {
         </div>
         <div id="content" class="container">
             <div class="tab-content">
+
                 <div class="tab-pane active" data-toggle="tab" id="latestmsgs">
+                    <h2>Latest Msgs</h2>
                     <table id="msgslist" class="table table-striped table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>Current Msgs</td>
-                            </tr>
-                        </thead>
                         <tbody>
                             <tr>
                                 <td>No Msgs Found</td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
 
-                </div>
                 <div class="tab-pane" id="newmsg">
-                    [New Msg]
+                    <h2>New Msg</h2>
+                    <form id="newmsg" name="newmsg">
+                        <textarea id="newmsgtext" maxlength="140"></textarea>
+                        <br>
+                        <div id="charcount">
+                            <span>0/140 Characters</span>
+                        </div>
+                        <button type="submit">Submit</button>
+                    </form>
                 </div>
+
                 <div class="tab-pane" id="users">
+                    <h2>Users</h2>
                     <table id="userlist" class="table table-striped table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>Users</td>
-                            </tr>
-                        </thead>
                         <tbody>
                             <tr>
                                 <td>No Users Found</td>
                             </tr>
                         </tbody>
                     </table>
-
                 </div>
+
                 <div class="tab-pane" id="account">
-                    <h3>Change Password</h3>
+                    <h2>Change Password</h2>
                     <form id="changepassword">
                         <label for="newwpassword" id="newwpassword_label">Password</label>
                         <input type="password" name="newwpassword" id="newwpassword" size="10" />
 
                         <br>
-                        <input type="submit" value="Submit" />
+                        <button type="submit">Submit</button>
                     </form>
 
-                    <h3>Add New Account</h3>
+                    <h2>Add New Account</h2>
                     <form id="addnewaccount" name="addnewaccount">
                         <label for="username" id="username_label">User Name</label>
                         <input type="text" name="username" id="username" size="10" />
@@ -94,28 +96,10 @@ if (!$user) {
                         <input type="password" name="password" id="password" size="10" />
 
                         <br>
-                        <input type="submit" value="Submit" />
+                        <button type="submit">Submit</button>
                     </form>
-                    <script>
-                        $( "#addnewaccount" ).submit(function( event ) {
-                            event.preventDefault();
-                            console.log("submitted");
-
-                            var request = new Object();
-                            request.method = "AddUser";
-                            request.params = toJson($(":input", this));
-                            console.log(request);
-
-                            $.post("api/index.php", JSON.stringify(request, null, 2), function(data) {
-                                console.log(data);
-                            });
-
-                        });
-
-                    </script>
-
-
                 </div>
+
             </div>
         </div>
     </body>

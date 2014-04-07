@@ -36,7 +36,7 @@ body {
 		text-align: center ;
 		margin-left: auto ;
 		margin-right: auto ;
-
+}
 
 #debugWrapper {
 	max-width: 960px;
@@ -62,4 +62,26 @@ body {
 .debugError {
 	color: #AA0000;
 	font-weight: bold;
+}
+
+#charcount {
+	width: 400px;
+	text-align: right;
+	margin-left: 100px;
+	font-size: x-small;
+	position: absolute;
+}
+
+#newmsgtext {
+	width: 400px;
+	height: 80px;
+	resize: none;
+}
+
+label {
+	width: 100px;
+}
+
+button {
+	margin-top: 5px;
 }
