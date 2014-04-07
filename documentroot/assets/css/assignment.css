@@ -78,10 +78,14 @@ body {
 	resize: none;
 }
 
+#userlist td + td {
+	width: 100px;
+}
+
 label {
 	width: 100px;
 }
 
-button {
+form button {
 	margin-top: 5px;
 }

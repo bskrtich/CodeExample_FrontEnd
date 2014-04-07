@@ -16,8 +16,8 @@ class msgservice
             'msgadd',
             'useradd',
             'userchangepass',
-            'subadd',
-            'subremove'
+            'followadd',
+            'followremove'
         );
 
         if ($method !== 'POST' && in_array($action, $actions_require_post)) {
@@ -159,23 +159,23 @@ class msgservice
 
                 break;
 
-            case 'subadd':
+            case 'followadd':
                 $userid = msgapi::requiredParameter($data, 'userid', 'int');
-                $subuserid = msgapi::requiredParameter($data, 'subuserid', 'int');
+                $followuserid = msgapi::requiredParameter($data, 'followuserid', 'int');
 
                 $sql = "INSERT IGNORE INTO
-                            subscriptions (
+                            follows (
                                 user_id,
-                                sub_to_user_id
+                                follow_user_id
                             )
                             VALUES (
                                 :user_id,
-                                :sub_to_user_id
+                                :follow_user_id
                             )";
 
                 $request = $this->db->prepare($sql);
                 $request->bindValue(':user_id', $userid, PDO::PARAM_INT);
-                $request->bindValue(':sub_to_user_id', $subuserid, PDO::PARAM_INT);
+                $request->bindValue(':follow_user_id', $followuserid, PDO::PARAM_INT);
 
                 if ($request->execute()) {
                     return true;
@@ -185,20 +185,20 @@ class msgservice
 
                 break;
 
-            case 'subremove':
+            case 'followremove':
                 $userid = msgapi::requiredParameter($data, 'userid', 'int');
-                $subuserid = msgapi::requiredParameter($data, 'subuserid', 'int');
+                $followuserid = msgapi::requiredParameter($data, 'followuserid', 'int');
 
                 $sql = "DELETE FROM
-                            subscriptions
+                            follows
                         WHERE
                             user_id = :user_id
                         AND
-                            sub_to_user_id = :sub_to_user_id";
+                            follow_user_id = :follow_user_id";
 
                 $request = $this->db->prepare($sql);
                 $request->bindValue(':user_id', $userid, PDO::PARAM_INT);
-                $request->bindValue(':sub_to_user_id', $subuserid, PDO::PARAM_INT);
+                $request->bindValue(':follow_user_id', $followuserid, PDO::PARAM_INT);
 
                 if ($request->execute()) {
                     return true;
@@ -208,7 +208,7 @@ class msgservice
 
                 break;
 
-            case 'submsglist':
+            case 'followmsglist':
                 $sql = 'SELECT
                             msgs.msg_id,
                             msgs.user_id,
@@ -219,11 +219,14 @@ class msgservice
                         FROM
                             msgs
                         JOIN
-                            subscriptions sub
+                            follow fow
                         ON
-                            msgs.user_id = sub.sub_to_user_id
+                            msgs.user_id = fow.follow_user_id
                         WHERE
-                            sub.user_id = :user_id';
+                            fow.user_id = :user_id
+                        ORDER BY
+                            msgs.created
+                        LIMIT 20';
 
                 $request = $this->db->prepare($sql);
                 $request->bindValue(

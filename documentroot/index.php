@@ -33,7 +33,7 @@ if (!$user) {
         <div class="navbar navbar-default navbar-fixed-top">
             <span class="navbar-brand">[Msgs]</span>
             <ul id="main-navbar" class="nav navbar-nav">
-                <li class="active"><a data-toggle="tab" href="#latestmsgs">Latest Msgs</a></li>
+                <li><a data-toggle="tab" href="#latestmsgs">Latest Msgs</a></li>
                 <li><a data-toggle="tab" href="#newmsg">New Msg</a></li>
                 <li><a data-toggle="tab" href="#users">Users</a></li>
                 <li><a data-toggle="tab" href="#account">Account</a></li>
@@ -41,9 +41,13 @@ if (!$user) {
             <p id="loggedInAs" class="navbar-text pull-right">Signed in as [user]</p>
         </div>
         <div id="content" class="container">
+            <div id="alert-area">
+
+            </div>
+
             <div class="tab-content">
 
-                <div class="tab-pane active" data-toggle="tab" id="latestmsgs">
+                <div class="tab-pane" data-toggle="tab" id="latestmsgs">
                     <h2>Latest Msgs</h2>
                     <table id="msgslist" class="table table-striped table-bordered table-hover">
                         <tbody>

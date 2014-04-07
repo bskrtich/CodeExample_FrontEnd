@@ -2,7 +2,11 @@
 
 var apiEndPoint = 'ajax.php';
 
-// method is called with params as input, with the result being fed to the apiCallback function on success, errors are written to the debug output
+/*
+method is called with params as input, with the result
+being fed to the apiCallback function on success, errors
+are written to the debug output
+*/
 function callAPI(action, apiCallback, params){
 	if (typeof params == 'undefined' || !params) {
 		params = new Object();
@@ -14,7 +18,7 @@ function callAPI(action, apiCallback, params){
 	request['params'] = params;
 
 	$.ajax({
-		'type' : 'GET',
+		'type' : 'POST',
 		'url' : apiEndPoint,
 		'data' : request,
 		'complete' : function(jqXHR, textStatus) {

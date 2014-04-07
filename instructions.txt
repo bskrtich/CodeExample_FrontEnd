@@ -10,9 +10,9 @@ useradd
 userchangepass
 userlist
 
-subadd
-subremove
-submsglist
+followadd
+followremove
+followmsglist
 
 
 1. List the users in the system.
