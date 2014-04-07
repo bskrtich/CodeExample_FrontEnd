@@ -143,12 +143,17 @@ class msgservice
 
             case 'userlist':
                 $sql = 'SELECT
-                            user_id,
-                            user_name
+                            users.user_id,
+                            users.user_name,
+                            IF(follows.follow_id IS NULL, 0, 1) AS is_following
                         FROM
                             users
+                        LEFT JOIN
+                            follows
+                        ON
+                            (users.user_id = follows.user_id)
                         ORDER BY
-                            user_name';
+                            users.user_name';
 
                 if ($request = $this->db->query($sql)) {
                     $result = $request->fetchAll(PDO::FETCH_ASSOC);
@@ -219,14 +224,14 @@ class msgservice
                         FROM
                             msgs
                         JOIN
-                            follow fow
+                            follows fow
                         ON
                             msgs.user_id = fow.follow_user_id
                         WHERE
                             fow.user_id = :user_id
                         ORDER BY
                             msgs.created
-                        LIMIT 20';
+                        LIMIT 10';
 
                 $request = $this->db->prepare($sql);
                 $request->bindValue(

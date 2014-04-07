@@ -39,7 +39,11 @@ $(function() {
         // Load/Setup Data for tab
         switch ($(event.target).attr('href').substring(1)) {
             case "latestmsgs":
-                callAPI('submsglist', parseMsgList, {});
+                callAPI('followmsglist', parseMsgList, {});
+            break;
+
+            case "newmsg":
+                // Ignore new msg tab
             break;
 
             case "users":
@@ -69,22 +73,40 @@ $(function() {
         }
     }
 
-    function parseMsgList(result){
-        console.log(result);
+    function parseMsgList(data) {
+        $("#msgslist > tbody").empty();
+
+        $.each(data, function(index, value) {
+            var html = '';
+
+            html += '<tr>';
+            html += '<td>'+value.msg+'</td>';
+            html += '</tr>';
+
+            $("#userlist > tbody").append(html);
+        });
     }
 
-    function parseUserList(data){
+    function parseUserList(data) {
         $("#userlist > tbody").empty();
 
         $.each(data, function(index, value) {
-            var html;
+            var html = '';
 
-            html = '<tr>';
+            html += '<tr>';
             html += '<td>@'+value.user_name+'</td>';
             html += '<td>';
-            html += '<button type="button" class="btn btn-success btn-xs">';
-            html += '<span class="glyphicon glyphicon-plus"></span> Follow';
-            html += '</button>';
+
+            if (value.is_following == 0) {
+                html += '<button type="button" class="btn btn-success btn-xs">';
+                html += '<span class="glyphicon glyphicon-plus"></span> Follow';
+                html += '</button>';
+            } else {
+                html += '<button type="button" class="btn btn-default btn-xs">';
+                html += '<span class="glyphicon glyphicon-plus"></span> Unfollow';
+                html += '</button>';
+            }
+
             html += '</td>';
             html += '</tr>';
 
