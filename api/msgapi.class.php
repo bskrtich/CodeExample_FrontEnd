@@ -52,7 +52,7 @@ class msgapi
         if (!isset($request[$parameter]))
             self::apiError('MissingParameter', 'Missing parameter: ' . $parameter);
 
-        if ($options !== null && !in_array($request[$parameter], $options))
+        if ($options !== null && is_array($options) && !in_array($request[$parameter], $options))
             self::apiError(
                 'InvalidParameter',
                 'InvalidParameter: '.$parameter.' must be one of: '.implode(', ', $options)

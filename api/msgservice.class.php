@@ -81,6 +81,14 @@ class msgservice
                     substr(sha1(microtime()), 0, 8)
                 );
 
+                if (strlen($username) <= 3 || strlen($password) <= 3) {
+                    msgapi::apiError(
+                        'NewPasswordLength',
+                        'Your new username and password must be longer then 3 characters'
+                    );
+                }
+
+
                 $salt = self::genSalt($username, $password);
                 $hashed = self::genHash($salt, $password);
 
@@ -117,7 +125,14 @@ class msgservice
                     substr(sha1(microtime()), 0, 8)
                 );
 
-                $salt = self::genSalt($username, $password);
+                if (strlen($password) <= 3) {
+                    msgapi::apiError(
+                        'NewPasswordLength',
+                        'Your new password must be longer then 3 characters'
+                    );
+                }
+
+                $salt = self::genSalt($this->user->user_name, $password);
                 $hashed = self::genHash($salt, $password);
 
                 $sql = "UPDATE
@@ -145,13 +160,14 @@ class msgservice
                 $sql = 'SELECT
                             users.user_id,
                             users.user_name,
+                            follows.follow_user_id,
                             IF(follows.follow_id IS NULL, 0, 1) AS is_following
                         FROM
                             users
                         LEFT JOIN
-                            follows
+                            (SELECT * FROM follows WHERE user_id = 2) follows
                         ON
-                            (users.user_id = follows.user_id)
+                            (users.user_id = follows.follow_user_id)
                         ORDER BY
                             users.user_name';
 
@@ -165,7 +181,6 @@ class msgservice
                 break;
 
             case 'followadd':
-                $userid = msgapi::requiredParameter($data, 'userid', 'int');
                 $followuserid = msgapi::requiredParameter($data, 'followuserid', 'int');
 
                 $sql = "INSERT IGNORE INTO
@@ -179,7 +194,7 @@ class msgservice
                             )";
 
                 $request = $this->db->prepare($sql);
-                $request->bindValue(':user_id', $userid, PDO::PARAM_INT);
+                $request->bindValue(':user_id', $this->user->user_id, PDO::PARAM_INT);
                 $request->bindValue(':follow_user_id', $followuserid, PDO::PARAM_INT);
 
                 if ($request->execute()) {
@@ -191,7 +206,6 @@ class msgservice
                 break;
 
             case 'followremove':
-                $userid = msgapi::requiredParameter($data, 'userid', 'int');
                 $followuserid = msgapi::requiredParameter($data, 'followuserid', 'int');
 
                 $sql = "DELETE FROM
@@ -202,7 +216,7 @@ class msgservice
                             follow_user_id = :follow_user_id";
 
                 $request = $this->db->prepare($sql);
-                $request->bindValue(':user_id', $userid, PDO::PARAM_INT);
+                $request->bindValue(':user_id', $this->user->user_id, PDO::PARAM_INT);
                 $request->bindValue(':follow_user_id', $followuserid, PDO::PARAM_INT);
 
                 if ($request->execute()) {

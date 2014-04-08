@@ -16,10 +16,22 @@ $(function() {
         $("#charcount > span").html($(this).val().length+"/140 Characters");
     });
 
+    $("#msgslist").delegate(".action-repost", "click", function (event) {
+        console.log($(event.target).data("msg-id"));
+    });
+
+    $("#users").delegate(".action-follow", "click", function (event) {
+        callAPI('followadd', parseFollowAddRemove, {followuserid: $(event.target).data("user-id")});
+    });
+
+    $("#users").delegate(".action-unfollow", "click", function (event) {
+        console.log("unfollow");
+        callAPI('followremove', parseFollowAddRemove, {followuserid: $(event.target).data("user-id")});
+    });
+
     $("#newmsg").submit(function (event) {
         event.preventDefault();
 
-        // Dont submit if msg is empty
         if ($("#newmsgtext").val().length == 0) {
             setAlert('warning', "You can't post an empty Msg");
             return;
@@ -31,11 +43,23 @@ $(function() {
     $("#changepassword").submit(function (event) {
         event.preventDefault();
 
+        if ($("#newwpassword").val().length <= 3) {
+            setAlert('warning', "Your password must be longer then 3 characters");
+            return;
+        }
+
+        callAPI('userchangepass', parsePassChange, {password: $("#newwpassword").val()});
     });
 
     $("#addnewaccount").submit(function (event) {
         event.preventDefault();
 
+        if ($("#username").val().length <= 3 || $("#password").val().length <= 3) {
+            setAlert('warning', "Your user name and password must be longer then 3 characters");
+            return;
+        }
+
+        callAPI('useradd', parseAccountAdd, {username: $("#username").val(), password: $("#password").val()});
     });
 
     // On tab change do stuff
@@ -66,26 +90,52 @@ $(function() {
         $('#loggedInAs').html('Logged in as: <span class="msg-font">@' + result['user'][0]['user_name'] + '</span>');
     }
 
+    function parsePassChange(result) {
+        if (result.error) {
+            setAlert('warning', "Error changing password");
+        } else {
+            setAlert('success', "Your password has been changed");
+            $('#changepassword')[0].reset();
+        }
+    }
+
+    function parseFollowAddRemove(result) {
+        if (result.error) {
+            setAlert('warning', "Error following/unfollowing account");
+        } else {
+            callAPI('userlist', parseUserList, {});
+        }
+    }
+
+    function parseAccountAdd(result) {
+        if (result.error) {
+            setAlert('warning', "Error adding account");
+        } else {
+            setAlert('success', "Your account has been added");
+            $('#addnewaccount')[0].reset();
+        }
+    }
+
     function parseMsgAdd(result) {
         if (result.error) {
             setAlert('warning', "Error posting msg");
         } else {
             setAlert('success', "Your msg has been posted");
-            $("#newmsgtext").val('');
+            $('#newmsg')[0].reset();
         }
     }
 
-    function parseMsgList(data) {
+    function parseMsgList(result) {
         $("#msgslist > tbody").empty();
 
-        $.each(data, function(index, value) {
+        $.each(result, function(index, value) {
             var html = '';
 
             html += '<tr>';
             html += '<td>';
             html += '<div class="pull-left well well-sm user-well"><span class="glyphicon glyphicon-user"></span></div>'
             html += '<div class="msg-info msg-font">@'+value.user_name+' - '+value.created+'</div>';
-            html += '<div class="msg-action msg-font"><button type="button" class="btn btn-link btn-xs"><span class="glyphicon glyphicon-repeat"></span> Repost</button></div>';
+            html += '<div class="msg-action msg-font"><button type="button" data-msg-id="'+value.msg_id+'" class="action-repost btn btn-link btn-xs"><span class="glyphicon glyphicon-repeat"></span> Repost</button></div>';
             html += '<div class="msg-content">'+value.msg+'</div>';
             html += '</td>';
             html += '</tr>';
@@ -94,10 +144,10 @@ $(function() {
         });
     }
 
-    function parseUserList(data) {
+    function parseUserList(result) {
         $("#userlist > tbody").empty();
 
-        $.each(data, function(index, value) {
+        $.each(result, function(index, value) {
             var html = '';
 
             html += '<tr>';
@@ -105,11 +155,11 @@ $(function() {
             html += '<td>';
 
             if (value.is_following == 0) {
-                html += '<button type="button" class="btn btn-success btn-xs">';
+                html += '<button type="button" data-user-id="'+value.user_id+'" class="action-follow btn btn-success btn-xs">';
                 html += '<span class="glyphicon glyphicon-plus"></span> Follow';
                 html += '</button>';
             } else {
-                html += '<button type="button" class="btn btn-default btn-xs">';
+                html += '<button type="button" data-user-id="'+value.user_id+'" class="action-unfollow btn btn-default btn-xs">';
                 html += '<span class="glyphicon glyphicon-plus"></span> Unfollow';
                 html += '</button>';
             }
