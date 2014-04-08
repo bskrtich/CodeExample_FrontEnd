@@ -60,7 +60,7 @@ if (!$user) {
 
                 <div class="tab-pane" id="newmsg">
                     <h2>New Msg</h2>
-                    <form id="newmsg" name="newmsg">
+                    <form id="newmsgform" name="newmsgform">
                         <textarea id="newmsgtext" maxlength="140"></textarea>
                         <br>
                         <div id="charcount">

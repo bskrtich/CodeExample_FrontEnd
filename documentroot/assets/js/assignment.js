@@ -16,20 +16,19 @@ $(function() {
         $("#charcount > span").html($(this).val().length+"/140 Characters");
     });
 
-    $("#msgslist").delegate(".action-repost", "click", function (event) {
+    $("#msgslist").on("click", ".action-repost", function (event) {
         console.log($(event.target).data("msg-id"));
     });
 
-    $("#users").delegate(".action-follow", "click", function (event) {
+    $("#users").on("click", ".action-follow", function (event) {
         callAPI('followadd', parseFollowAddRemove, {followuserid: $(event.target).data("user-id")});
     });
 
-    $("#users").delegate(".action-unfollow", "click", function (event) {
-        console.log("unfollow");
+    $("#users").on("click", ".action-unfollow", function (event) {
         callAPI('followremove', parseFollowAddRemove, {followuserid: $(event.target).data("user-id")});
     });
 
-    $("#newmsg").submit(function (event) {
+    $("#newmsgform").submit(function (event) {
         event.preventDefault();
 
         if ($("#newmsgtext").val().length == 0) {
@@ -121,7 +120,7 @@ $(function() {
             setAlert('warning', "Error posting msg");
         } else {
             setAlert('success', "Your msg has been posted");
-            $('#newmsg')[0].reset();
+            $('#newmsgform')[0].reset();
         }
     }
 

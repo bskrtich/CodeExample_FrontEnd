@@ -165,13 +165,16 @@ class msgservice
                         FROM
                             users
                         LEFT JOIN
-                            (SELECT * FROM follows WHERE user_id = 2) follows
+                            (SELECT * FROM follows WHERE user_id = :user_id) follows
                         ON
                             (users.user_id = follows.follow_user_id)
                         ORDER BY
                             users.user_name';
 
-                if ($request = $this->db->query($sql)) {
+                $request = $this->db->prepare($sql);
+                $request->bindValue(':user_id', $this->user->user_id);
+
+                if ($request->execute()) {
                     $result = $request->fetchAll(PDO::FETCH_ASSOC);
                     return $result;
                 } else {
