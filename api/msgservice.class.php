@@ -217,6 +217,7 @@ class msgservice
                 $sql = 'SELECT
                             msgs.msg_id,
                             msgs.user_id,
+                            users.user_name,
                             msgs.attribution_msg_id,
                             msgs.msg,
                             msgs.created,
@@ -227,10 +228,14 @@ class msgservice
                             follows fow
                         ON
                             msgs.user_id = fow.follow_user_id
+                        JOIN
+                            users
+                        ON
+                            msgs.user_id = users.user_id
                         WHERE
                             fow.user_id = :user_id
                         ORDER BY
-                            msgs.created
+                            msgs.created DESC
                         LIMIT 10';
 
                 $request = $this->db->prepare($sql);

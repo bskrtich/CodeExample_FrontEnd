@@ -28,10 +28,20 @@ $(function() {
         callAPI('msgadd', parseMsgAdd, {msg: $("#newmsgtext").val()});
     });
 
+    $("#changepassword").submit(function (event) {
+        event.preventDefault();
+
+    });
+
+    $("#addnewaccount").submit(function (event) {
+        event.preventDefault();
+
+    });
+
     // On tab change do stuff
     $('a[data-toggle="tab"]').on('show.bs.tab', function (event) {
         // Change Page Title
-        document.title = base_page_title+$(event.target).html();
+        document.title = base_page_title + $(event.target).html();
 
         // Remove any alerts
         $("#alert-area").html('');
@@ -42,16 +52,8 @@ $(function() {
                 callAPI('followmsglist', parseMsgList, {});
             break;
 
-            case "newmsg":
-                // Ignore new msg tab
-            break;
-
             case "users":
                 callAPI('userlist', parseUserList, {});
-            break;
-
-            default:
-                console.log("Unknown Tab: "+$(event.target).attr('href').substring(1));
             break;
         }
     });
@@ -60,11 +62,11 @@ $(function() {
     // parse Functions
     /////
 
-    function parseUserInfo(result){
-        $('#loggedInAs').html('Logged in as: ' + result['user'][0]['user_name']);
+    function parseUserInfo(result) {
+        $('#loggedInAs').html('Logged in as: <span class="msg-font">@' + result['user'][0]['user_name'] + '</span>');
     }
 
-    function parseMsgAdd(result){
+    function parseMsgAdd(result) {
         if (result.error) {
             setAlert('warning', "Error posting msg");
         } else {
@@ -80,10 +82,15 @@ $(function() {
             var html = '';
 
             html += '<tr>';
-            html += '<td>'+value.msg+'</td>';
+            html += '<td>';
+            html += '<div class="pull-left well well-sm user-well"><span class="glyphicon glyphicon-user"></span></div>'
+            html += '<div class="msg-info msg-font">@'+value.user_name+' - '+value.created+'</div>';
+            html += '<div class="msg-action msg-font"><button type="button" class="btn btn-link btn-xs"><span class="glyphicon glyphicon-repeat"></span> Repost</button></div>';
+            html += '<div class="msg-content">'+value.msg+'</div>';
+            html += '</td>';
             html += '</tr>';
 
-            $("#userlist > tbody").append(html);
+            $("#msgslist > tbody").append(html);
         });
     }
 
@@ -94,7 +101,7 @@ $(function() {
             var html = '';
 
             html += '<tr>';
-            html += '<td>@'+value.user_name+'</td>';
+            html += '<td class="msg-font">@'+value.user_name+'</td>';
             html += '<td>';
 
             if (value.is_following == 0) {
@@ -121,7 +128,7 @@ $(function() {
     // Alert Function
     function setAlert(type, message) {
         var html = '';
-        console.log('setAlert: '+type+' '+message);
+
         switch (type) {
             case "success":
                 html += '<div class="alert alert-success alert-dismissable">';

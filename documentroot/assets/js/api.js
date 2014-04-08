@@ -35,15 +35,20 @@ function parseAPIResult(jqXHR, textStatus, action, apiCallback){
 		var resultObject = JSON.parse(jqXHR['responseText']);
 		writeDebug(JSON.stringify(resultObject, null, 4).replace(/\\n/g, "\n"));
 	} catch(err) {
-		if(jqXHR['responseText'] != '')
-		writeDebug('Invalid response from server.' + jqXHR['responseText'], 'debugError');
+		if (jqXHR['responseText'] != '') {
+			writeDebug('Invalid response from server.' + jqXHR['responseText'], 'debugError');
+		}
 		return;
 	}
 
-	if ('error' in resultObject && typeof resultObject['error']['message'] != 'undefined' && typeof resultObject['error']['name'] != 'undefined') {
+	if ('error' in resultObject &&
+		typeof resultObject['error']['message'] != 'undefined' &&
+		typeof resultObject['error']['name'] != 'undefined') {
+
 		writeDebug('API Error: ' + resultObject['error']['message'], 'debugError');
+
 		return;
-	} else if(!('result' in resultObject) || jqXHR['status'] != 200) {
+	} else if (!('result' in resultObject) || jqXHR['status'] != 200) {
 		writeDebug('Invalid response from server.' + jqXHR['responseText'], 'debugError');
 		return;
 	}
@@ -57,7 +62,7 @@ function writeDebug(text, extraClass){
 	var debugCount = 0;
 	$('#debug div').each(function(){
 		debugCount++;
-		if(debugCount > 10)
+		if (debugCount > 10)
 		$(this).remove();
 	});
 
