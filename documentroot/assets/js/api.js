@@ -18,13 +18,13 @@ function callAPI(action, apiCallback, params){
 	request['params'] = params;
 
 	$.ajax({
-		'type' : 'POST',
-		'url' : apiEndPoint,
-		'data' : request,
-		'complete' : function(jqXHR, textStatus) {
+		'type': 'POST',
+		'url': apiEndPoint,
+		'data': request,
+		'complete': function(jqXHR, textStatus) {
 			parseAPIResult(jqXHR, textStatus, action, apiCallback);
 		},
-		'dataType' : 'json'
+		'dataType': 'json'
 	});
 }
 

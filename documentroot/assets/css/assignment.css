@@ -119,7 +119,7 @@ body {
 .msg-info {
     top: 5px;
     left: 75px;
-    width: 300px;
+    width: 400px;
     height: 20px;
 
     position: absolute;
@@ -141,6 +141,29 @@ body {
     margin-top: 20px;
     min-height: 35px;
     margin-left: 60px;
+}
+
+.msg-repost-tag {
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    color: #CFCFCF;
+    font-weight: bold;
+
+    top: 35px;
+    left: 75px;
+
+    position: absolute;
+}
+
+.msg-repost {
+    color: #CFCFCF;
+
+    bottom: 5px;
+    right: 5px;
+
+    font-size: 13px;
+
+    position: absolute;
 }
 
 label {

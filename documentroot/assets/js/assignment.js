@@ -17,7 +17,8 @@ $(function() {
     });
 
     $("#msgslist").on("click", ".action-repost", function (event) {
-        console.log($(event.target).data("msg-id"));
+        var msg = $(event.target).parent().parent().find('.msg-content').html();
+        callAPI('msgadd', parseMsgRepost, {msg: msg, attrmsgid: $(event.target).data("msg-id")});
     });
 
     $("#users").on("click", ".action-follow", function (event) {
@@ -121,6 +122,15 @@ $(function() {
         } else {
             setAlert('success', "Your msg has been posted");
             $('#newmsgform')[0].reset();
+            $("#charcount > span").html("0/140 Characters");
+        }
+    }
+
+    function parseMsgRepost(result) {
+        if (result.error) {
+            setAlert('warning', "Error reposting msg");
+        } else {
+            callAPI('followmsglist', parseMsgList, {});
         }
     }
 
@@ -133,9 +143,19 @@ $(function() {
             html += '<tr>';
             html += '<td>';
             html += '<div class="pull-left well well-sm user-well"><span class="glyphicon glyphicon-user"></span></div>'
-            html += '<div class="msg-info msg-font">@'+value.user_name+' - '+value.created+'</div>';
-            html += '<div class="msg-action msg-font"><button type="button" data-msg-id="'+value.msg_id+'" class="action-repost btn btn-link btn-xs"><span class="glyphicon glyphicon-repeat"></span> Repost</button></div>';
+            html += '<div class="msg-info msg-font">';
+            html += '@'+value.user_name+' - '+value.created;
+            html += '</div>';
+            html += '<div class="msg-action msg-font">';
+            html += '<button type="button" data-msg-id="'+value.msg_id+'" class="action-repost btn btn-link btn-xs"><span class="glyphicon glyphicon-repeat"></span> Repost</button>';
+            html += '</div>';
             html += '<div class="msg-content">'+value.msg+'</div>';
+
+            if (value.attribution_user_id) {
+                html += '<div class="msg-repost-tag msg-font">REPOST</div>';
+                html += '<div class="msg-repost msg-font">Original by @'+value.attribution_user_name+'</div>';
+            }
+
             html += '</td>';
             html += '</tr>';
 

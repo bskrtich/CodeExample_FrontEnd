@@ -30,14 +30,14 @@ class msgservice
         switch ($action) {
             case 'msgadd':
                 $msg = msgapi::requiredParameter($data, 'msg', 'string');
-                $attrmsg = msgapi::optionalParameter($data, 'attrmsg', 'int', null);
+                $attrmsgid = msgapi::optionalParameter($data, 'attrmsgid', 'int', null);
 
-                $status = self::postMessage($msg, $attrmsg);
+                $status = self::postMessage($msg, $attrmsgid);
 
                 if ($status === true) {
                     $result = new stdClass();
                     $result->msg = $msg;
-                    $result->attrmsg = $attrmsg;
+                    $result->attrmsgid = $attrmsgid;
                     return $result;
                 } else {
                     return false;
@@ -234,26 +234,41 @@ class msgservice
                 $sql = 'SELECT
                             msgs.msg_id,
                             msgs.user_id,
-                            users.user_name,
-                            msgs.attribution_msg_id,
+                            msgs.user_name,
+                            msgs.attribution_user_id,
+                            users.user_name AS attribution_user_name,
                             msgs.msg,
                             msgs.created,
                             msgs.modified
-                        FROM
+                        FROM (
+                            SELECT
+                                msgs.msg_id,
+                                msgs.user_id,
+                                users.user_name,
+                                msgs.attribution_user_id,
+                                msgs.msg,
+                                msgs.created,
+                                msgs.modified
+                            FROM
+                                msgs
+                            JOIN
+                                follows fow
+                            ON
+                                msgs.user_id = fow.follow_user_id
+                            JOIN
+                                users
+                            ON
+                                msgs.user_id = users.user_id
+                            WHERE
+                                fow.user_id = :user_id
+                            ORDER BY
+                                msgs.created DESC
+                            LIMIT 10
+                        )
                             msgs
-                        JOIN
-                            follows fow
-                        ON
-                            msgs.user_id = fow.follow_user_id
-                        JOIN
+                        LEFT JOIN
                             users
-                        ON
-                            msgs.user_id = users.user_id
-                        WHERE
-                            fow.user_id = :user_id
-                        ORDER BY
-                            msgs.created DESC
-                        LIMIT 10';
+                        ON msgs.attribution_user_id = users.user_id';
 
                 $request = $this->db->prepare($sql);
                 $request->bindValue(
@@ -336,23 +351,23 @@ class msgservice
         return $this->user;
     }
 
-    public function postMessage($msg, $attribution_msg_id = null) {
+    public function postMessage($msg, $attribution_user_id = null) {
         $sql = 'INSERT INTO
                     msgs (
                         user_id,
                         msg,
-                        attribution_msg_id
+                        attribution_user_id
                     )
                     VALUES (
                         :user_id,
                         :msg,
-                        :attr_msg_id
+                        :attr_user_id
                     )';
 
         $request = $this->db->prepare($sql);
         $request->bindValue(':user_id', $this->user->user_id, PDO::PARAM_INT);
         $request->bindValue(':msg', $msg, PDO::PARAM_STR);
-        $request->bindValue(':attr_msg_id', $attribution_msg_id, PDO::PARAM_INT);
+        $request->bindValue(':attr_user_id', $attribution_user_id, PDO::PARAM_INT);
 
         if ($request->execute()) {
             return true;

@@ -3,18 +3,6 @@ The goal of this assignment is to develop a very simple prototype of a microblog
 
 The finished assignment should have the following functionality:
 
-msgpost
-
-usergetinfo
-useradd
-userchangepass
-userlist
-
-followadd
-followremove
-followmsglist
-
-
 1. List the users in the system.
 2. Allow subscribing to and unsubscribing from the users in that list.
 3. Show the last 20 messages from the users you're subscribed to.
@@ -25,7 +13,6 @@ followmsglist
 We're looking for code quality, database design, and functionality. Also, feel free to use any open source libraries (JQuery is included), but try to stick with the spirit of the simple framework we've provided.
 
 When finished, return a zip similar to this one including a dump of your database and all the code for your project.
-
 
 
 Setup:
