@@ -1,7 +1,9 @@
 <?php
-require_once '../api/msgservice.class.php';
+require_once '../api/main.include.php';
 
-$msgservice = new msgservice($db);
+use bskrtich\microblog\MsgService;
+
+$msgservice = new MsgService($db);
 $user = $msgservice->validateUser();
 
 // Validates the user via HTTP Auth

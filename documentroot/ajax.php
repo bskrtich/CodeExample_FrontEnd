@@ -1,8 +1,10 @@
 <?php
-require '../api/msgservice.class.php';
-require '../api/msgapi.class.php';
+require '../api/main.include.php';
 
-$msgservice = new msgservice($db);
+use bskrtich\microblog\MsgService;
+use bskrtich\microblog\MsgApi;
+
+$msgservice = new MsgService($db);
 $user = $msgservice->validateUser();
 
 if (isset($_REQUEST['action'])) {
@@ -20,11 +22,11 @@ if (isset($_REQUEST['action'])) {
     }
 
     if (isset($result)) {
-        msgapi::apiResult($result);
+        MsgApi::apiResult($result);
     } else {
-        msgapi::httpError(500, 'RequestError: Unknown Request Error.');
+        MsgApi::httpError(500, 'RequestError: Unknown Request Error.');
     }
 
 } else {
-    msgapi::httpError(500, 'MissingAction: No Action specified.');
+    MsgApi::httpError(500, 'MissingAction: No Action specified.');
 }

@@ -1,9 +1,10 @@
 <?php
-require_once 'database.php';
+namespace bskrtich\microblog;
 
-class msgapi
+class MsgApi
 {
-    public static function httpError($http_response_code, $message) {
+    public static function httpError($http_response_code, $message)
+    {
         $response = $_SERVER['SERVER_PROTOCOL'].' '.
             $http_response_code.
             ' Internal Server Error '.
@@ -14,10 +15,13 @@ class msgapi
         exit();
     }
 
-    public static function apiError($errorName, $errorMessage) {
+    public static function apiError($errorName, $errorMessage)
+    {
         $action = '';
 
-        if (isset($_REQUEST['action'])) $action = $_REQUEST['action'];
+        if (isset($_REQUEST['action'])) {
+            $action = $_REQUEST['action'];
+        }
 
         $apiOutput = array(
             'error' => array(
@@ -31,7 +35,8 @@ class msgapi
         self::apiResult($apiOutput);
     }
 
-    public static function pdoError($db) {
+    public static function pdoError($db)
+    {
         $error = $db->errorInfo();
         self::apiError(
             'PDO Error ('.$error[0].') '.$error[1],
@@ -41,7 +46,8 @@ class msgapi
 
     // Ensures that the request was sent with the provided parameter,
     // and that is of the appropriate type
-    public static function requiredParameter($request, $parameter, $type, $options = null) {
+    public static function requiredParameter($request, $parameter, $type, $options = null)
+    {
         if ($request === null) {
             self::apiError(
                 'NoParam',
@@ -49,29 +55,33 @@ class msgapi
             );
         }
 
-        if (!isset($request[$parameter]))
+        if (!isset($request[$parameter])) {
             self::apiError('MissingParameter', 'Missing parameter: ' . $parameter);
+        }
 
-        if ($options !== null && is_array($options) && !in_array($request[$parameter], $options))
+        if ($options !== null && is_array($options) && !in_array($request[$parameter], $options)) {
             self::apiError(
                 'InvalidParameter',
                 'InvalidParameter: '.$parameter.' must be one of: '.implode(', ', $options)
             );
+        }
 
         return self::checkParameterType($request, $type, $parameter);
     }
 
 
     // Determines if an optional parameter was sent, and defaults to the default if not
-    public static function optionalParameter($request, $parameter, $type, $default, $options = null) {
+    public static function optionalParameter($request, $parameter, $type, $default, $options = null)
+    {
         if (isset($request[$parameter]) &&
             (!empty($request[$parameter]) ||
             $request[$parameter] === false)) {
-            if ($options !== null && !in_array($request[$parameter], $options))
+            if ($options !== null && !in_array($request[$parameter], $options)) {
                 self::apiError(
                     'InvalidParameter',
                     'InvalidParameter: if given, '.$parameter.' must be one of: '.implode(', ', $options)
                 );
+            }
 
             return self::checkParameterType($request, $type, $parameter, true);
         } else {
@@ -80,8 +90,11 @@ class msgapi
     }
 
     // Returns a successful API response and it's data, then exits
-    public static function apiResult($result = null) {
-        if ($result === null) $result = new stdClass();
+    public static function apiResult($result = null)
+    {
+        if ($result === null) {
+            $result = new \stdClass();
+        }
 
         if (isset($result->error)) {
             $apiOutput = $result;
@@ -96,12 +109,13 @@ class msgapi
 
 
     // Validates the type of required and optional parameters
-    public static function checkParameterType($request, $type, $parameter, $optional = false) {
+    public static function checkParameterType($request, $type, $parameter, $optional = false)
+    {
         $optionalOutput = ($optional ? 'if given, ' : '');
 
         if (is_string($request[$parameter]) &&
             is_numeric($request[$parameter])) {
-            if(strpos($request[$parameter], '.') !== false) {
+            if (strpos($request[$parameter], '.') !== false) {
                 $request[$parameter] = (float) $request[$parameter];
             } else {
                 $request[$parameter] = (int) $request[$parameter];
